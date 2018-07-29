@@ -1,11 +1,91 @@
-﻿<NavigationWindow x:Class="MainWindow"
+﻿<Window x:Class="MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFTemplates"
         mc:Ignorable="d"
+        Title="WPFTemplates"
         WindowState="Maximized"
         Height="450" Width="800">
 
-</NavigationWindow>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Frame x:Name="frm" Grid.Row="1"/>
+        
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,5" Grid.Row="0">
+            <StackPanel.Resources>
+                <Style x:Key="ToggleRadioButton" TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                    <EventSetter Event="Checked" Handler="ToggleRadioButton_Checked"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
+                    <Setter Property="Padding" Value="10,5,10,5"/>
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="RadioButton">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualStateGroup.Transitions>
+                                                <VisualTransition GeneratedDuration="0:0:0.2" />
+                                                <VisualTransition GeneratedDuration="0" To="Pressed" />
+                                            </VisualStateGroup.Transitions>
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Duration="0" Storyboard.TargetName="MouseOverBackground" Storyboard.TargetProperty="Opacity" To="0.5"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <!--<ColorAnimation Duration="0" Storyboard.TargetName="Background" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)" To="#FF6DBDD1"/>-->
+                                                    <DoubleAnimation Duration="0" Storyboard.TargetName="MouseOverBackground" Storyboard.TargetProperty="Opacity" To="1"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Duration="0" Storyboard.TargetName="DisabledBackground" Storyboard.TargetProperty="Opacity" To="0.5"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                        <VisualStateGroup x:Name="CheckStates">
+                                            <VisualState x:Name="Checked">
+                                                <Storyboard>
+                                                    <DoubleAnimation Duration="0" Storyboard.TargetName="Background" Storyboard.TargetProperty="Opacity" To="0.3"/>
+                                                    <DoubleAnimation Duration="0" Storyboard.TargetName="Border" Storyboard.TargetProperty="Opacity" To="1"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Unchecked"/>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+
+                                    <Border Opacity="0" x:Name="Background" Background="AliceBlue" />
+                                    <Border Opacity="0" x:Name="MouseOverBackground" Background="AliceBlue" />
+                                    <Border Opacity="0" x:Name="Border" BorderThickness="1" BorderBrush="Gray" />
+
+                                    <ContentPresenter
+                                          x:Name="contentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          Margin="{TemplateBinding Padding}"/>
+
+                                    <Border Opacity="0" x:Name="DisabledBackground" Background="{DynamicResource ColorElementBackground}" IsHitTestVisible="false" />
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </StackPanel.Resources>
+
+            <RadioButton Content="TreeView" Style="{StaticResource ToggleRadioButton}" IsChecked="True"/>
+           
+        </StackPanel>
+        
+    </Grid>
+</Window>

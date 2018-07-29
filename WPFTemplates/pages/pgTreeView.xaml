@@ -8,6 +8,194 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="pgTreeView">
     <Grid>
-        
+        <TreeView x:Name="tvMain" Grid.Column="0" AllowDrop="True"
+                  PreviewMouseDown="TreeView_PreviewMouseDown"
+                  PreviewMouseUp="TreeView_PreviewMouseUp"
+                  MouseMove="TreeView_MouseMove"
+                  DragEnter="TreeView_DragEnter"
+                  DragOver="TreeView_DragEnter"
+                  Drop="TreeView_Drop">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <Border Name="ItemBorder" CornerRadius="2" Background="{Binding Background, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
+                      BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=TreeViewItem}}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <Image Source="{Binding Icon}" Margin="0,0,5,0" Width="16" Height="16"/>
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+
+            <TreeView.Resources>
+                <SolidColorBrush Color="Black" x:Key="ColorText" />
+                <SolidColorBrush Color="Black" x:Key="ColorGlyph" />
+                <SolidColorBrush Color="White" x:Key="ColorElementBackground" />
+                <SolidColorBrush Color="#FFe5f3ff" x:Key="ColorTreeViewMouseOver" />
+                <SolidColorBrush Color="#FFe5fff3" x:Key="ColorTreeViewDragOver" />
+                <SolidColorBrush Color="#FFcce8ff" x:Key="ColorTreeViewSelected" />
+                <SolidColorBrush Color="#FFd9d9d9" x:Key="ColorTreeViewSelectedInactive" />
+                <SolidColorBrush Color="#FF99d1ff" x:Key="ColorTreeViewSelectedBorder" />
+
+                <Style TargetType="TreeView">
+                    <Setter Property="OverridesDefaultStyle" Value="True" />
+                    <Setter Property="SnapsToDevicePixels" Value="True" />
+                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TreeView">
+                                <Border Name="Border" BorderThickness="1" BorderBrush="{DynamicResource ColorTreeViewSelectedBorder}" Background="{DynamicResource ColorElementBackground}">
+                                    <ScrollViewer Focusable="False" CanContentScroll="False" Padding="0,0,2,0">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+                <Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Grid Width="15" Height="13" Background="Transparent">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CheckStates">
+                                            <VisualState x:Name="Checked">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="Collapsed">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Hidden}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="Expanded">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Unchecked" />
+                                            <VisualState x:Name="Indeterminate" />
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Path x:Name="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1,1,1,1" Data="M 2 1 L 5 4 L 2 7 L 3 8 L 7 4 L 3 0 Z" Fill="{DynamicResource ColorGlyph}"/>
+                                    <Path x:Name="Expanded" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1,1,1,1" Data="M 1 3 L 5 7 L 9 3 L 8 2 L 5 5 L 2 2 Z" Visibility="Hidden" Fill="{DynamicResource ColorGlyph}"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+                <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="True" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="{Binding Path=HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                    <Setter Property="VerticalContentAlignment" Value="{Binding Path=VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+                    <Setter Property="SnapsToDevicePixels" Value="True" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                                <ControlTemplate.Resources>
+                                    <local:ConverterLeftMarginMultiplier LeftMargin="10" x:Key="ConverterLeftMarginMultiplier" />
+                                </ControlTemplate.Resources>
+                                <StackPanel>
+                                    <Border Name="TreeViewItemBorder" DragEnter="TreeViewItemBorder_DragEnter" PreviewDragLeave="TreeViewItemBorder_PreviewDragLeave" Drop="TreeViewItemBorder_PreviewDragLeave" MouseRightButtonDown="TreeViewItemBorder_MouseRightButtonDown">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="true">
+                                                        <Setter Property="Background" Value="{DynamicResource ColorTreeViewMouseOver}"/>
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource ColorTreeViewMouseOver}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="local:DragDropHelper.IsDragOver" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource ColorTreeViewDragOver}"/>
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource ColorTreeViewDragOver}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid Margin="{Binding Converter={StaticResource ConverterLeftMarginMultiplier}, RelativeSource={RelativeSource TemplatedParent}}"
+>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="20" />
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <ToggleButton x:Name="Expander"
+                                        AllowDrop="true"
+                                        DragEnter="TreeViewItemExpander_DragEnter"
+                                        Style="{StaticResource ExpandCollapseToggleStyle}"
+                                        IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                        ClickMode="Press"/>
+                                            <ContentPresenter x:Name="PART_Header"
+                                        Grid.Column="1"
+                                        ContentSource="Header"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                        </Grid>
+
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="123213"/>
+                                                <MenuItem Header="123213"/>
+                                                <MenuItem Header="123213"/>
+                                                <MenuItem Header="123213"/>
+                                                <MenuItem Header="123213"/>
+                                                <MenuItem Header="123213"/>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+
+                                    </Border>
+                                    <ItemsPresenter x:Name="ItemsHost"/>
+                                </StackPanel>
+
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsExpanded" Value="false">
+                                        <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
+                                    </Trigger>
+                                    <Trigger Property="HasItems" Value="false">
+                                        <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="HasHeader" Value="false"/>
+                                            <Condition Property="Width" Value="Auto"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="PART_Header" Property="MinWidth" Value="75"/>
+                                    </MultiTrigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="HasHeader" Value="false"/>
+                                            <Condition Property="Height" Value="Auto"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="PART_Header" Property="MinHeight" Value="19"/>
+                                    </MultiTrigger>
+                                    <Trigger Property="IsSelected" Value="true">
+                                        <Setter TargetName="TreeViewItemBorder" Property="Background" Value="{DynamicResource ColorTreeViewSelected}"/>
+                                        <Setter TargetName="TreeViewItemBorder" Property="BorderBrush" Value="{DynamicResource ColorTreeViewSelectedBorder}"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="true"/>
+                                            <Condition Property="IsSelectionActive" Value="false"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="TreeViewItemBorder" Property="Background" Value="{DynamicResource ColorTreeViewSelectedInactive}"/>
+                                        <Setter TargetName="TreeViewItemBorder" Property="BorderBrush" Value="{DynamicResource ColorTreeViewSelectedInactive}"/>
+                                    </MultiTrigger>
+                                    <Trigger Property="IsEnabled" Value="false">
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TreeView.Resources>
+        </TreeView>
     </Grid>
 </Page>
