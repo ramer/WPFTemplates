@@ -11,25 +11,25 @@ Class pgTreeView
         Dim cc As TreeViewContainer
 
         c = New TreeViewContainer("Root 1")
-        c.Children.Add(New TreeViewContainer("Child 1-1", c))
-        c.Children.Add(New TreeViewContainer("Child 1-2", c))
-        c.Children.Add(New TreeViewContainer("Child 1-3", c))
+        c.Children.Add(New TreeViewContainer("Child 1-1"))
+        c.Children.Add(New TreeViewContainer("Child 1-2"))
+        c.Children.Add(New TreeViewContainer("Child 1-3"))
         containers.Add(c)
 
         c = New TreeViewContainer("Root 2")
-        c.Children.Add(New TreeViewContainer("Child 2-1", c))
-        c.Children.Add(New TreeViewContainer("Child 2-2", c))
-        c.Children.Add(New TreeViewContainer("Child 2-3", c))
+        c.Children.Add(New TreeViewContainer("Child 2-1"))
+        c.Children.Add(New TreeViewContainer("Child 2-2"))
+        c.Children.Add(New TreeViewContainer("Child 2-3"))
         containers.Add(c)
 
         c = New TreeViewContainer("Root 3")
-        cc = New TreeViewContainer("Child 3-3", c)
-        cc.Children.Add(New TreeViewContainer("Child 3-3-1", cc))
-        cc.Children.Add(New TreeViewContainer("Child 3-3-2", cc))
-        cc.Children.Add(New TreeViewContainer("Child 3-3-3", cc))
+        cc = New TreeViewContainer("Child 3-3")
+        cc.Children.Add(New TreeViewContainer("Child 3-3-1"))
+        cc.Children.Add(New TreeViewContainer("Child 3-3-2"))
+        cc.Children.Add(New TreeViewContainer("Child 3-3-3"))
 
-        c.Children.Add(New TreeViewContainer("Child 3-1", c))
-        c.Children.Add(New TreeViewContainer("Child 3-2", c))
+        c.Children.Add(New TreeViewContainer("Child 3-1"))
+        c.Children.Add(New TreeViewContainer("Child 3-2"))
         c.Children.Add(cc)
         containers.Add(c)
 
@@ -45,6 +45,7 @@ Class pgTreeView
                 Return containers
             Else
                 p = FindParentCollectionForContainer(c.Children, container)
+                If p IsNot Nothing Then Exit For
             End If
         Next
         Return p
@@ -115,18 +116,23 @@ Class pgTreeView
     Private Sub TreeView_DragEnter(sender As Object, e As DragEventArgs)
         If e.Data.GetDataPresent(GetType(TreeViewContainer)) Then
             Dim tvidestination = FindVisualParent(Of TreeViewItem)(e.OriginalSource)
-            Dim destination As TreeViewContainer = If(tvidestination IsNot Nothing AndAlso TypeOf (tvidestination.DataContext) Is TreeViewContainer, CType(tvidestination.DataContext, TreeViewContainer), Nothing)
-            Dim source As TreeViewContainer = e.Data.GetData(GetType(TreeViewContainer))
+            Dim objdestination As TreeViewContainer = If(tvidestination IsNot Nothing AndAlso TypeOf (tvidestination.DataContext) Is TreeViewContainer, CType(tvidestination.DataContext, TreeViewContainer), Nothing)
+            Dim objsource As TreeViewContainer = e.Data.GetData(GetType(TreeViewContainer))
 
             e.Effects = DragDropEffects.Move
 
-            If source Is destination Then e.Effects = DragDropEffects.None
-            If source IsNot Nothing And destination IsNot Nothing Then
-                Dim parent = destination.Parent
-                While parent IsNot Nothing
-                    If source Is parent Then e.Effects = DragDropEffects.None : Exit While
-                    parent = parent.Parent
-                End While
+            If objsource Is objdestination Then
+                ' to self
+                e.Effects = DragDropEffects.None
+            ElseIf objsource IsNot Nothing And objdestination IsNot Nothing Then
+                ' to another node
+                Dim selfparentcollection = FindParentCollectionForContainer(objsource.Children, objdestination)
+                ' to self children
+                If selfparentcollection IsNot Nothing Then e.Effects = DragDropEffects.None
+
+                Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
+                ' same container
+                If sourceparentcollection Is objdestination.Children Then e.Effects = DragDropEffects.None
             End If
         Else
             e.Effects = DragDropEffects.None
@@ -142,30 +148,45 @@ Class pgTreeView
             Dim objsource As TreeViewContainer = e.Data.GetData(GetType(TreeViewContainer))
             Dim tvisource As TreeViewItem = CType(e.Source, TreeView).ItemContainerGenerator.ContainerFromItem(objsource)
 
-            If objsource Is objdestination Then Exit Sub
-            If objsource IsNot Nothing And objdestination IsNot Nothing Then
-                Dim parent = objdestination.Parent
-                While parent IsNot Nothing
-                    If objsource Is parent Then Exit Sub
-                    parent = parent.Parent
-                End While
+            If objsource Is objdestination Then
+                ' to self
+                Exit Sub
+            ElseIf objsource IsNot Nothing And objdestination IsNot Nothing Then
+                ' to another node
+                Dim selfparentcollection = FindParentCollectionForContainer(objsource.Children, objdestination)
+                If selfparentcollection IsNot Nothing Then Exit Sub
+
+                Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
+
+                ' same container
+                If sourceparentcollection Is objdestination.Children Then Exit Sub
 
                 objdestination.Children.Add(objsource)
-                If objsource.Parent IsNot Nothing Then
-                    objsource.Parent.Children.Remove(objsource)
+
+                If sourceparentcollection IsNot Nothing Then
+                    sourceparentcollection.Remove(objsource)
                 Else
-                    containers.Remove(objsource)
+                    ' impossible
+                    Exit Sub
                 End If
-                objsource.Parent = objdestination
+
                 tvidestination.IsExpanded = True
             ElseIf objsource IsNot Nothing And objdestination Is Nothing Then
+                ' to treeview as root
+
+                Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
+
+                ' same container
+                If sourceparentcollection Is containers Then Exit Sub
+
                 containers.Add(objsource)
-                If objsource.Parent IsNot Nothing Then
-                    objsource.Parent.Children.Remove(objsource)
+
+                If sourceparentcollection IsNot Nothing Then
+                    sourceparentcollection.Remove(objsource)
                 Else
-                    containers.Remove(objsource)
+                    ' impossible
+                    Exit Sub
                 End If
-                objsource.Parent = objdestination
             End If
         End If
     End Sub
@@ -221,9 +242,8 @@ Public Class TreeViewContainer
 
     End Sub
 
-    Sub New(Name As String, Optional Parent As TreeViewContainer = Nothing)
+    Sub New(Name As String)
         Me.Name = Name
-        Me.Parent = Parent
     End Sub
 
     Public Property Name As String
@@ -236,6 +256,5 @@ Public Class TreeViewContainer
 
     Public Property Description As String
     Public Property Children As New ObservableCollection(Of TreeViewContainer)
-    Public Property Parent As TreeViewContainer
 
 End Class
