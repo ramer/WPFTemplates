@@ -38,13 +38,13 @@ Class pgTreeView
         tvMain.ItemsSource = containers
     End Sub
 
-    Public Function FindParentForContainer(containers As ObservableCollection(Of TreeViewContainer), container As TreeViewContainer, parent As TreeViewContainer) As TreeViewContainer
-        Dim p As TreeViewContainer = Nothing
+    Public Function FindParentCollectionForContainer(containers As ObservableCollection(Of TreeViewContainer), container As TreeViewContainer) As ObservableCollection(Of TreeViewContainer)
+        Dim p As ObservableCollection(Of TreeViewContainer) = Nothing
         For Each c In containers
             If c Is container Then
-                Return parent
+                Return containers
             Else
-                p = FindParentForContainer(c.Children, container, c)
+                p = FindParentCollectionForContainer(c.Children, container)
             End If
         Next
         Return p
@@ -67,15 +67,15 @@ Class pgTreeView
 
     Private Sub TreeView_PreviewKeyDown(sender As Object, e As KeyEventArgs)
         If e.SystemKey = Key.Up AndAlso Keyboard.Modifiers = ModifierKeys.Alt Then
-            Dim parent = FindParentForContainer(containers, CType(sender, TreeView).SelectedItem, Nothing)
-            If parent Is Nothing Then Exit Sub
-            Dim i = parent.Children.IndexOf(CType(sender, TreeView).SelectedItem)
-            If i > 0 Then Parent.Children.Move(i, i - 1)
+            Dim parentcollection = FindParentCollectionForContainer(containers, CType(sender, TreeView).SelectedItem)
+            If parentcollection Is Nothing Then Exit Sub
+            Dim i = parentcollection.IndexOf(CType(sender, TreeView).SelectedItem)
+            If i > 0 Then parentcollection.Move(i, i - 1)
         ElseIf e.SystemKey = Key.Down AndAlso Keyboard.Modifiers = ModifierKeys.Alt Then
-            Dim parent = FindParentForContainer(containers, CType(sender, TreeView).SelectedItem, Nothing)
-            If parent Is Nothing Then Exit Sub
-            Dim i = parent.Children.IndexOf(CType(sender, TreeView).SelectedItem)
-            If i < parent.Children.Count - 1 And i >= 0 Then parent.Children.Move(i, i + 1)
+            Dim parentcollection = FindParentCollectionForContainer(containers, CType(sender, TreeView).SelectedItem)
+            If parentcollection Is Nothing Then Exit Sub
+            Dim i = parentcollection.IndexOf(CType(sender, TreeView).SelectedItem)
+            If i < parentcollection.Count - 1 And i >= 0 Then parentcollection.Move(i, i + 1)
         End If
     End Sub
 
