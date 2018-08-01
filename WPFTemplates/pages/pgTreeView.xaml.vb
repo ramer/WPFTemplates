@@ -123,9 +123,11 @@ Class pgTreeView
 
             If objsource Is objdestination Then
                 ' to self
+
                 e.Effects = DragDropEffects.None
             ElseIf objsource IsNot Nothing And objdestination IsNot Nothing Then
                 ' to another node
+
                 Dim selfparentcollection = FindParentCollectionForContainer(objsource.Children, objdestination)
                 ' to self children
                 If selfparentcollection IsNot Nothing Then e.Effects = DragDropEffects.None
@@ -133,6 +135,13 @@ Class pgTreeView
                 Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
                 ' same container
                 If sourceparentcollection Is objdestination.Children Then e.Effects = DragDropEffects.None
+
+            ElseIf objsource IsNot Nothing And objdestination Is Nothing Then
+                ' to treeview as root
+
+                Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
+                ' already in root
+                If sourceparentcollection Is containers Then e.Effects = DragDropEffects.None
             End If
         Else
             e.Effects = DragDropEffects.None
@@ -150,14 +159,16 @@ Class pgTreeView
 
             If objsource Is objdestination Then
                 ' to self
+
                 Exit Sub
             ElseIf objsource IsNot Nothing And objdestination IsNot Nothing Then
                 ' to another node
+
                 Dim selfparentcollection = FindParentCollectionForContainer(objsource.Children, objdestination)
+                ' to self children
                 If selfparentcollection IsNot Nothing Then Exit Sub
 
                 Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
-
                 ' same container
                 If sourceparentcollection Is objdestination.Children Then Exit Sub
 
@@ -175,8 +186,7 @@ Class pgTreeView
                 ' to treeview as root
 
                 Dim sourceparentcollection = FindParentCollectionForContainer(containers, objsource)
-
-                ' same container
+                ' already in root
                 If sourceparentcollection Is containers Then Exit Sub
 
                 containers.Add(objsource)
