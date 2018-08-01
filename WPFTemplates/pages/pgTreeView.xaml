@@ -11,6 +11,7 @@
         <TreeView x:Name="tvMain" Grid.Column="0" AllowDrop="True"
                   PreviewMouseDown="TreeView_PreviewMouseDown"
                   PreviewMouseUp="TreeView_PreviewMouseUp"
+                  PreviewKeyDown="TreeView_PreviewKeyDown"
                   MouseMove="TreeView_MouseMove"
                   DragEnter="TreeView_DragEnter"
                   DragOver="TreeView_DragEnter"

@@ -38,6 +38,17 @@ Class pgTreeView
         tvMain.ItemsSource = containers
     End Sub
 
+    Public Function FindParentForContainer(containers As ObservableCollection(Of TreeViewContainer), container As TreeViewContainer, parent As TreeViewContainer) As TreeViewContainer
+        Dim p As TreeViewContainer = Nothing
+        For Each c In containers
+            If c Is container Then
+                Return parent
+            Else
+                p = FindParentForContainer(c.Children, container, c)
+            End If
+        Next
+        Return p
+    End Function
 
     Private Sub TreeViewItemBorder_DragEnter(sender As Object, e As DragEventArgs)
         DragDropHelper.SetIsDragOver(sender, True)
@@ -52,6 +63,20 @@ Class pgTreeView
     Private Sub TreeViewItemBorder_MouseRightButtonDown(sender As Object, e As MouseButtonEventArgs)
         Dim tvi = FindVisualParent(Of TreeViewItem)(sender)
         If tvi IsNot Nothing Then tvi.IsSelected = True
+    End Sub
+
+    Private Sub TreeView_PreviewKeyDown(sender As Object, e As KeyEventArgs)
+        If e.SystemKey = Key.Up AndAlso Keyboard.Modifiers = ModifierKeys.Alt Then
+            Dim parent = FindParentForContainer(containers, CType(sender, TreeView).SelectedItem, Nothing)
+            If parent Is Nothing Then Exit Sub
+            Dim i = parent.Children.IndexOf(CType(sender, TreeView).SelectedItem)
+            If i > 0 Then Parent.Children.Move(i, i - 1)
+        ElseIf e.SystemKey = Key.Down AndAlso Keyboard.Modifiers = ModifierKeys.Alt Then
+            Dim parent = FindParentForContainer(containers, CType(sender, TreeView).SelectedItem, Nothing)
+            If parent Is Nothing Then Exit Sub
+            Dim i = parent.Children.IndexOf(CType(sender, TreeView).SelectedItem)
+            If i < parent.Children.Count - 1 And i >= 0 Then parent.Children.Move(i, i + 1)
+        End If
     End Sub
 
     Private Sub TreeViewItemExpander_DragEnter(sender As Object, e As DragEventArgs)
