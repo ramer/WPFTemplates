@@ -3,40 +3,34 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:local="clr-namespace:WPFTemplates"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="pgTiles">
     <Page.Resources>
-        <sys:Double x:Key="TileLength">100</sys:Double>
-        
         <DataTemplate x:Key="ItemsControlItemDataTemplate">
-            <Grid Width="{DynamicResource TileLength}" Height="{DynamicResource TileLength}">
-                <Border x:Name="ItemsControlItem" BorderBrush="Black" BorderThickness="1" Background="AliceBlue" SnapsToDevicePixels="True" Margin="5">
-                    <StackPanel Orientation="Vertical" Margin="5">
-                        <Image Source="{Binding Path=Icon}" Width="48" Height="48" Margin="0,0,0,5" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
+            <Border x:Name="ItemsControlItem" Width="80" Height="80" BorderBrush="Black" BorderThickness="1" Background="AliceBlue" SnapsToDevicePixels="True">
+                <StackPanel Orientation="Vertical" Margin="5">
+                    <Image Source="{Binding Path=Icon}" Width="48" Height="48" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </DataTemplate>
     </Page.Resources>
     
     <Grid>
         <ItemsControl x:Name="icTiles" AllowDrop="True" Background="Transparent"
+            PreviewMouseDown="ItemsControl_PreviewMouseDown"
+            PreviewMouseUp="ItemsControl_PreviewMouseUp"
+            PreviewMouseMove="ItemsControl_PreviewMouseMove"
             ItemTemplate="{StaticResource ItemsControlItemDataTemplate}">
-            <ItemsControl.ItemContainerStyle>
-                <Style TargetType="ContentPresenter">
-                    <Setter Property="Canvas.Left" Value="{Binding Left}"/>
-                    <Setter Property="Canvas.Top" Value="{Binding Top}"/>
-                </Style>
-            </ItemsControl.ItemContainerStyle>
+
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas Margin="5"/>
+                    <UniformGrid Columns="7" Rows="5"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+        <!--<Canvas x:Name="Overlay" AllowDrop="True"/>-->
     </Grid>
 </Page>
