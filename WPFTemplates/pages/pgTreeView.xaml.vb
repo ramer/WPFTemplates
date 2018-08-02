@@ -51,6 +51,18 @@ Class pgTreeView
         Return p
     End Function
 
+    Public Function FindTreeViewItemFromObject(icg As ItemContainerGenerator, obj As Object) As TreeViewItem
+        Dim tvi As TreeViewItem = icg.ContainerFromItem(obj)
+        If tvi IsNot Nothing Then Return tvi
+
+        For I = 0 To icg.Items.Count
+            tvi = FindTreeViewItemFromObject(CType(icg.ContainerFromIndex(I), TreeViewItem).ItemContainerGenerator, obj)
+            If tvi IsNot Nothing Then Exit For
+        Next
+
+        Return tvi
+    End Function
+
     Private Sub TreeViewItemBorder_DragEnter(sender As Object, e As DragEventArgs)
         DragDropHelper.SetIsDragOver(sender, True)
     End Sub
@@ -72,11 +84,15 @@ Class pgTreeView
             If parentcollection Is Nothing Then Exit Sub
             Dim i = parentcollection.IndexOf(CType(sender, TreeView).SelectedItem)
             If i > 0 Then parentcollection.Move(i, i - 1)
+            Dim tvi = FindTreeViewItemFromObject(CType(sender, TreeView).ItemContainerGenerator, CType(sender, TreeView).SelectedItem)
+            If tvi IsNot Nothing Then tvi.BringIntoView()
         ElseIf e.SystemKey = Key.Down AndAlso Keyboard.Modifiers = ModifierKeys.Alt Then
             Dim parentcollection = FindParentCollectionForContainer(containers, CType(sender, TreeView).SelectedItem)
             If parentcollection Is Nothing Then Exit Sub
             Dim i = parentcollection.IndexOf(CType(sender, TreeView).SelectedItem)
             If i < parentcollection.Count - 1 And i >= 0 Then parentcollection.Move(i, i + 1)
+            Dim tvi = FindTreeViewItemFromObject(CType(sender, TreeView).ItemContainerGenerator, CType(sender, TreeView).SelectedItem)
+            If tvi IsNot Nothing Then tvi.BringIntoView()
         End If
     End Sub
 
