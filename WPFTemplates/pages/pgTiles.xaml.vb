@@ -1,4 +1,6 @@
 ﻿Imports System.Collections.ObjectModel
+Imports System.ComponentModel
+Imports System.Windows.Media.Animation
 
 Class pgTiles
 
@@ -9,52 +11,126 @@ Class pgTiles
         tiles = New ObservableCollection(Of Tile)
         icTiles.ItemsSource = tiles
 
-        tiles.Add(New Tile("tile 1"))
-        tiles.Add(New Tile("tile 2"))
-        tiles.Add(New Tile("tile 3"))
-        tiles.Add(New Tile("tile 4"))
-        tiles.Add(New Tile("tile 5"))
-        tiles.Add(New Tile("tile 6"))
-        tiles.Add(New Tile("tile 7"))
-        tiles.Add(New Tile("tile 8"))
-        tiles.Add(New Tile("tile 9"))
-        tiles.Add(New Tile("tile 10"))
-        tiles.Add(New Tile("tile 11"))
-        tiles.Add(New Tile("tile 12"))
+        For i = 0 To 20
+            tiles.Add(New Tile("tile " & i))
+        Next
+
     End Sub
 
-    Private _startpoint As Point
-    Private _offset As Point
+    Private _itemscontrolstartpoint As Point
+    Private _itemoffset As Point
     Private _isdragging As Boolean
-    Private _cursor As Cursor
+    'Private _cursor As Cursor
     Private _adorner As DragAdorner
+    Private _draggeditem As Border
 
     Private Sub ItemsControl_PreviewMouseDown(sender As Object, e As MouseButtonEventArgs)
-        _startpoint = e.GetPosition(Me)
+        _itemscontrolstartpoint = e.GetPosition(Me)
 
         Dim currentitem As Border = FindVisualParent(Of Border)(e.OriginalSource)
         If currentitem Is Nothing OrElse TypeOf currentitem.DataContext IsNot Tile Then Exit Sub
 
-        _offset = e.GetPosition(currentitem)
-        Me.Title = _offset.X & "    " & _offset.Y
+        _itemoffset = e.GetPosition(currentitem)
+        Me.Title = _itemoffset.X & "    " & _itemoffset.Y
     End Sub
 
     Private Sub ItemsControl_PreviewMouseUp(sender As Object, e As MouseButtonEventArgs)
-        _startpoint = Nothing
+        _itemscontrolstartpoint = Nothing
     End Sub
 
     Private Sub ItemsControl_PreviewMouseMove(sender As Object, e As MouseEventArgs)
         If e.LeftButton = MouseButtonState.Pressed AndAlso Not _isdragging Then
             Dim position As Point = e.GetPosition(Me)
-            If Math.Abs(position.X - _startpoint.X) > SystemParameters.MinimumHorizontalDragDistance OrElse Math.Abs(position.Y - _startpoint.Y) > SystemParameters.MinimumVerticalDragDistance Then
-                StartDragProcess(e.OriginalSource, _offset)
+            If Math.Abs(position.X - _itemscontrolstartpoint.X) > SystemParameters.MinimumHorizontalDragDistance OrElse Math.Abs(position.Y - _itemscontrolstartpoint.Y) > SystemParameters.MinimumVerticalDragDistance Then
+                StartDragProcess(e.OriginalSource, _itemoffset)
             End If
         End If
     End Sub
 
+    Private Sub ItemsControlItem_DragOver(sender As Object, e As DragEventArgs)
+        If sender Is _draggeditem Then Exit Sub
+        If CType(sender, Border).Tag = True Then Exit Sub
+        Dim sourceitem As Tile = _draggeditem.DataContext
+        If sourceitem Is Nothing Then Exit Sub
+        Dim destination = CType(sender, Border)
+        Dim destinationitem As Tile = destination.DataContext
+        If destinationitem Is Nothing Then Exit Sub
+
+        ' hide dest element
+        destination.Opacity = 0
+
+        ' swap
+        Dim c = sourceitem.Column : Dim r = sourceitem.Row
+        sourceitem.Column = destinationitem.Column : sourceitem.Row = destinationitem.Row
+        destinationitem.Column = c : destinationitem.Row = r
+
+        ' animate appearance
+
+        Dim storyboard = New Storyboard()
+        Dim animation = New DoubleAnimation()
+
+        animation.From = 0
+        animation.To = 1
+        animation.Duration = New Duration(TimeSpan.FromMilliseconds(200))
+
+        Storyboard.SetTarget(animation, destination)
+        Storyboard.SetTargetProperty(animation, New PropertyPath(OpacityProperty))
+        storyboard.Children.Add(animation)
+
+        storyboard.Begin(CType(sender, Border))
+
+    End Sub
+
+    Private Sub ItemsControlGrid_Drop(sender As Object, e As DragEventArgs)
+        Dim grd As Grid = CType(sender, Grid)
+        Dim point As Point = e.GetPosition(grd)
+
+        Dim row As Integer = 0
+        Dim col As Integer = 0
+        Dim accumulatedHeight As Double = 0.0
+        Dim accumulatedWidth As Double = 0.0
+
+        ' calc row mouse was over
+        For Each rowDefinition As RowDefinition In grd.RowDefinitions
+            accumulatedHeight += rowDefinition.ActualHeight
+            If accumulatedHeight >= point.Y Then
+                Exit For
+            End If
+            row += 1
+        Next
+
+        ' calc col mouse was over
+        For Each columnDefinition As ColumnDefinition In grd.ColumnDefinitions
+            accumulatedWidth += columnDefinition.ActualWidth
+            If accumulatedWidth >= point.X Then
+                Exit For
+            End If
+            col += 1
+        Next
+
+        ' create new
+        Dim source As Tile = e.Data.GetData(GetType(Tile))
+        source.Column = col
+        source.Row = row
+        ' delete old
+        'For Each element As UIElement In grdLayout.Children
+        '    If Grid.GetRow(element) = row And Grid.GetColumn(element) = col Then
+        '        grdLayout.Children.Remove(element)
+        '        RemoveHandler element.MouseLeftButtonDown, AddressOf tblckAttribute_MouseLeftButtonDown
+        '        Exit For
+        '    End If
+        'Next
+
+        '' add new
+        'Grid.SetRow(tblck, row)
+        'Grid.SetColumn(tblck, col)
+
+        'grdLayout.Children.Add(tblck)
+    End Sub
+
     Private Sub StartDragProcess(OriginalSource As Object, Position As Point)
-        Dim currentitem As Border = FindVisualParent(Of Border)(OriginalSource)
-        If currentitem Is Nothing OrElse TypeOf currentitem.DataContext IsNot Tile Then Exit Sub
+        _draggeditem = FindVisualParent(Of Border)(OriginalSource)
+        If _draggeditem Is Nothing OrElse TypeOf _draggeditem.DataContext IsNot Tile Then Exit Sub
 
         Dim DragScope = TryCast(Window.GetWindow(Me).Content, FrameworkElement)
         Dim previousDrop As Boolean = DragScope.AllowDrop
@@ -67,14 +143,14 @@ Class pgTiles
         'DragScope.DragLeave += dragleavehandler
         Dim queryhandler As QueryContinueDragEventHandler = New QueryContinueDragEventHandler(AddressOf DragSource_QueryContinueDrag)
         AddHandler DragScope.QueryContinueDrag, queryhandler
-        _adorner = New DragAdorner(Me, CreateAdornerContent(currentitem.DataContext), Position)
-        '_adorner = New DragAdorner(Me, CreateAdornerContent(currentitem.DataContext), Position)
+        '_adorner = New DragAdorner(Me, currentitem, Position)
+        _adorner = New DragAdorner(Me, CreateAdornerContent(_draggeditem.DataContext, _draggeditem.RenderSize), Position)
         AdornerLayer.GetAdornerLayer(DragScope).Add(_adorner)
 
-        currentitem.Visibility = Visibility.Hidden
+        _draggeditem.Visibility = Visibility.Hidden
 
         _isdragging = True
-        Dim dragData As New DataObject(currentitem.DataContext)
+        Dim dragData As New DataObject(_draggeditem.DataContext)
         Dim de As DragDropEffects = DragDrop.DoDragDrop(Me, dragData, DragDropEffects.All)
 
         DragScope.AllowDrop = previousDrop
@@ -88,24 +164,24 @@ Class pgTiles
         RemoveHandler DragScope.PreviewDragOver, dragoverhandler
         _isdragging = False
 
-        currentitem.Visibility = Visibility.Visible
+        _draggeditem.Visibility = Visibility.Visible
 
     End Sub
 
     Private Sub DragSource_GiveFeedback(ByVal sender As Object, ByVal e As GiveFeedbackEventArgs)
-        'Try
-        '    Try
-        '        Using cursorStream As Stream = New MemoryStream(My.Resources.deny)
-        '            _cursor = New Cursor(cursorStream)
-        '        End Using
-        '        Mouse.SetCursor(_cursor)
-        '    Catch ex As Exception
-        '        Debug.Print(ex.Message)
-        '    End Try
-        '    e.UseDefaultCursors = False
-        '    e.Handled = True
-        'Finally
-        'End Try
+        Try
+            'Try
+            '    Using cursorStream As Stream = New MemoryStream(My.Resources.deny)
+            '        _cursor = New Cursor(cursorStream)
+            '    End Using
+            '    Mouse.SetCursor(_cursor)
+            'Catch ex As Exception
+            '    Debug.Print(ex.Message)
+            'End Try
+            e.UseDefaultCursors = False
+            e.Handled = True
+        Finally
+        End Try
     End Sub
 
     Private Sub DragTarget_PreviewDragOver(sender As Object, e As DragEventArgs)
@@ -120,7 +196,7 @@ Class pgTiles
         If e.EscapePressed Then e.Action = DragAction.Cancel
     End Sub
 
-    Private Function CreateAdornerContent(item As Tile) As UIElement
+    Private Function CreateAdornerContent(item As Tile, size As Size) As UIElement
         Dim brd As New ContentPresenter
         brd.ContentTemplate = FindResource("ItemsControlItemDataTemplate")
         brd.Content = item
@@ -139,8 +215,8 @@ Class pgTiles
         'sp.Children.Add(New TextBlock() With {.Text = item.Name})
 
         'brd.Child = sp
-        brd.Measure(New Size(80, 80))
-        brd.Arrange(New Rect(brd.DesiredSize))
+        brd.Arrange(New Rect(size))
+        'brd.Measure(brd.DesiredSize)
         brd.UpdateLayout()
         Return brd
     End Function
@@ -226,6 +302,17 @@ Class pgTiles
 End Class
 
 Public Class Tile
+    Implements INotifyPropertyChanged
+
+    Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements ComponentModel.INotifyPropertyChanged.PropertyChanged
+
+    Private Sub NotifyPropertyChanged(propertyName As String)
+        Me.OnPropertyChanged(New PropertyChangedEventArgs(propertyName))
+    End Sub
+
+    Protected Overridable Sub OnPropertyChanged(e As PropertyChangedEventArgs)
+        RaiseEvent PropertyChanged(Me, e)
+    End Sub
 
     Sub New()
 
@@ -233,9 +320,33 @@ Public Class Tile
 
     Sub New(Name As String)
         Me.Name = Name
+        Column = Int(Rnd() * 10)
+        Row = Int(Rnd() * 5)
     End Sub
 
     Public Property Name As String
+
+    Private _column As Integer
+    Public Property Column As Integer
+        Get
+            Return _column
+        End Get
+        Set(value As Integer)
+            _column = value
+            NotifyPropertyChanged("Column")
+        End Set
+    End Property
+
+    Private _row As Integer
+    Public Property Row As Integer
+        Get
+            Return _row
+        End Get
+        Set(value As Integer)
+            _row = value
+            NotifyPropertyChanged("Row")
+        End Set
+    End Property
 
     Public ReadOnly Property Icon As BitmapImage
         Get

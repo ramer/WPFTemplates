@@ -9,28 +9,64 @@
       Title="pgTiles">
     <Page.Resources>
         <DataTemplate x:Key="ItemsControlItemDataTemplate">
-            <Border x:Name="ItemsControlItem" Width="80" Height="80" BorderBrush="Black" BorderThickness="1" Background="AliceBlue" SnapsToDevicePixels="True">
-                <StackPanel Orientation="Vertical" Margin="5">
-                    <Image Source="{Binding Path=Icon}" Width="48" Height="48" Margin="0,0,10,0"/>
-                    <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+            <Border x:Name="ItemsControlItem" DragOver="ItemsControlItem_DragOver" BorderBrush="Black" Width="100" Height="100" BorderThickness="1" Margin="5" Background="AliceBlue" SnapsToDevicePixels="True">
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <StackPanel Orientation="Vertical" Margin="5" VerticalAlignment="Center">
+                    <Image Source="{Binding Path=Icon}" Width="48" Height="48" Margin="0,0,0,5" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" SnapsToDevicePixels="True"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
     </Page.Resources>
     
     <Grid>
-        <ItemsControl x:Name="icTiles" AllowDrop="True" Background="Transparent"
+        <ScrollViewer HorizontalAlignment="Center" VerticalAlignment="Center" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="icTiles" Background="Transparent" BorderBrush="Black" BorderThickness="1"
             PreviewMouseDown="ItemsControl_PreviewMouseDown"
             PreviewMouseUp="ItemsControl_PreviewMouseUp"
             PreviewMouseMove="ItemsControl_PreviewMouseMove"
             ItemTemplate="{StaticResource ItemsControlItemDataTemplate}">
-
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Grid.Column" Value="{Binding Column}"/>
+                    <Setter Property="Grid.Row" Value="{Binding Row}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="7" Rows="5"/>
+                    <Grid x:Name="ItemsControlGrid" Drop="ItemsControlGrid_Drop" AllowDrop="True" Background="Transparent" Margin="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="110"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="110"/>
+                            <RowDefinition Height="110"/>
+                            <RowDefinition Height="110"/>
+                            <RowDefinition Height="110"/>
+                            <RowDefinition Height="110"/>
+                            <RowDefinition Height="110"/>
+                            <RowDefinition Height="110"/>
+                        </Grid.RowDefinitions>
+                    </Grid>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+        </ScrollViewer>
         <!--<Canvas x:Name="Overlay" AllowDrop="True"/>-->
     </Grid>
 </Page>
