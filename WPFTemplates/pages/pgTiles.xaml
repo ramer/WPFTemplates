@@ -29,43 +29,46 @@
     
     <Grid>
         <ScrollViewer HorizontalAlignment="Center" VerticalAlignment="Center" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-        <ItemsControl x:Name="icTiles" Background="Transparent" BorderBrush="Black" BorderThickness="1"
-            PreviewMouseDown="ItemsControl_PreviewMouseDown"
-            PreviewMouseUp="ItemsControl_PreviewMouseUp"
-            PreviewMouseMove="ItemsControl_PreviewMouseMove"
-            ItemTemplate="{StaticResource ItemsControlItemDataTemplate}">
-            <ItemsControl.ItemContainerStyle>
-                <Style TargetType="ContentPresenter">
-                    <Setter Property="Grid.Column" Value="{Binding Column}"/>
-                    <Setter Property="Grid.Row" Value="{Binding Row}"/>
-                </Style>
-            </ItemsControl.ItemContainerStyle>
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid x:Name="ItemsControlGrid" Drop="ItemsControlGrid_Drop" AllowDrop="True" Background="Transparent" Margin="5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="110"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="110"/>
-                            <RowDefinition Height="110"/>
-                            <RowDefinition Height="110"/>
-                            <RowDefinition Height="110"/>
-                            <RowDefinition Height="110"/>
-                            <RowDefinition Height="110"/>
-                            <RowDefinition Height="110"/>
-                        </Grid.RowDefinitions>
-                    </Grid>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
+            <ItemsControl x:Name="icTiles" Background="Transparent" BorderBrush="Black" BorderThickness="1"
+                PreviewMouseDown="ItemsControl_PreviewMouseDown"
+                PreviewMouseUp="ItemsControl_PreviewMouseUp"
+                PreviewMouseMove="ItemsControl_PreviewMouseMove"
+                ItemTemplate="{StaticResource ItemsControlItemDataTemplate}">
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Grid.Column" Value="{Binding Column}"/>
+                        <Setter Property="Grid.Row" Value="{Binding Row}"/>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Grid x:Name="ItemsControlGrid" Drop="ItemsControlGrid_Drop" AllowDrop="True" Background="Transparent" Margin="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="110"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="110"/>
+                            </Grid.RowDefinitions>
+                        </Grid>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
         </ScrollViewer>
         <!--<Canvas x:Name="Overlay" AllowDrop="True"/>-->
     </Grid>

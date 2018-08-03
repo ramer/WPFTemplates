@@ -11,10 +11,24 @@ Class pgTiles
         tiles = New ObservableCollection(Of Tile)
         icTiles.ItemsSource = tiles
 
+        Randomize()
+
         For i = 0 To 20
-            tiles.Add(New Tile("tile " & i))
+            Dim c = Int(Rnd() * 10)
+            Dim r = Int(Rnd() * 8)
+            FindFreeCell(c, r)
+            tiles.Add(New Tile("tile " & i, c, r))
         Next
 
+    End Sub
+
+    Private Sub FindFreeCell(ByRef c As Integer, ByRef r As Integer)
+        For Each t In tiles
+            If t.Column = c And t.Row = r Then
+                c = c + 1
+                If c = 10 Then r = r + 1 : c = 0
+            End If
+        Next
     End Sub
 
     Private _itemscontrolstartpoint As Point
@@ -31,7 +45,6 @@ Class pgTiles
         If currentitem Is Nothing OrElse TypeOf currentitem.DataContext IsNot Tile Then Exit Sub
 
         _itemoffset = e.GetPosition(currentitem)
-        Me.Title = _itemoffset.X & "    " & _itemoffset.Y
     End Sub
 
     Private Sub ItemsControl_PreviewMouseUp(sender As Object, e As MouseButtonEventArgs)
@@ -188,7 +201,6 @@ Class pgTiles
         If _adorner IsNot Nothing Then
             _adorner.LeftOffset = e.GetPosition(Me).X
             _adorner.TopOffset = e.GetPosition(Me).Y
-            Me.Title = _adorner.LeftOffset & "    " & _adorner.TopOffset
         End If
     End Sub
 
@@ -318,10 +330,10 @@ Public Class Tile
 
     End Sub
 
-    Sub New(Name As String)
+    Sub New(Name As String, Column As Integer, Row As Integer)
         Me.Name = Name
-        Column = Int(Rnd() * 10)
-        Row = Int(Rnd() * 5)
+        Me.Column = Column
+        Me.Row = Row
     End Sub
 
     Public Property Name As String
